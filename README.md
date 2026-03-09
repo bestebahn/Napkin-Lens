@@ -1,8 +1,6 @@
 # Napkin Lens
 
-Extract a lens prescription from a cross-section diagram. Get it into your simulation.
-
-That's it. That's the tool.
+Because sometimes the best ideas start from a napkin. Extract a lens prescription from a cross-section diagram -> Get it into your simulation.
 
 ---
 
@@ -10,9 +8,9 @@ That's it. That's the tool.
 
 Optical design usually starts in one of a few ways: you search patents, you pull from a design database, or you define your requirements and let a tool generate a starting point.
 
-But sometimes the starting point is a diagram. A figure from a paper, a sketch from a meeting, something that exists visually but not yet numerically. Getting from that image to a working prescription has always meant doing it by hand.
+But sometimes the starting point is a diagram. A figure from a paper, a sketch from a meeting, something that exists visually but not yet numerically. Getting from that image to a working optical design has always meant doing it by hand.
 
-Napkin Lens automates that step using computer vision. Upload the diagram, calibrate the scale, and it extracts radii of curvature, thicknesses, and air gaps into a format you can actually use.
+Napkin Lens automates that step using computer vision. Upload the diagram, calibrate the scale, and it extracts radii of curvature, thicknesses, and air gaps into a format you can use.
 
 ---
 
@@ -20,7 +18,7 @@ Napkin Lens automates that step using computer vision. Upload the diagram, calib
 
 **Five-step workflow:**
 
-1. **Upload** a lens cross-section diagram (patent figure, paper, hand sketch)
+1. **Upload** a lens cross-section diagram (patent figure, paper, hand sketch | preferably without rays)
 2. **Calibrate** — mark a known dimension on the image to set the scale
 3. **Detect** — OpenCV finds the lens elements and their contours
 4. **Review** — per-surface table in OpticStudio Lens Data Editor format (R1, R2, thickness, air gap)
@@ -37,7 +35,7 @@ Napkin Lens automates that step using computer vision. Upload the diagram, calib
 
 ## Is this production-ready optical design software?
 
-No. It's a starting point generator. The extracted prescription is a reasonable first approximation — it gets you into the ballpark so you can start optimizing, not a substitute for careful measurement or a validated design database.
+No. It's a starting point generator. The extracted prescription is a reasonable first approximation — it gets you into the ballpark but is not a substitute for careful measurement or a validated design database.
 
 Think of it as the digital version of taking a photo of that napkin sketch before the meeting ends.
 
@@ -83,19 +81,14 @@ napkin-lens/
 
 ## What's coming
 
-- Aspheric surface identification (R/D ratio flagging + AI reasoning)
-- Lens form identification and patent search
 - Optiland Python script export
 - ZMX / OpticStudio export
-- Sketch interpretation — upload an actual napkin, not just a clean diagram
 
 ---
 
 ## Feedback
 
-If you're an optical engineer and this is useful, useless, or almost-useful-but-not-quite — I'd genuinely like to know. Open an issue or reach out directly.
-
-That's kind of the whole point of putting this out there.
+If you're an optical engineer and this is useful, useless, or almost-useful-but-not-quite — I'd genuinely like to know. Open an issue or reach out directly: efcarbajal1@gmail.com. 
 
 ---
 
