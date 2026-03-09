@@ -19,10 +19,19 @@ Napkin Lens automates that step using computer vision. Upload the diagram, calib
 **Five-step workflow:**
 
 1. **Upload** a lens cross-section diagram (patent figure, paper, hand sketch | preferably without rays)
+![image](assets/Guide_Images/Page1.png)
+
 2. **Calibrate** — mark a known dimension on the image to set the scale
+![image](assets/Guide_Images/Page2.png)
+
 3. **Detect** — OpenCV finds the lens elements and their contours
+![image](assets/Guide_Images/Page3.png)
+
 4. **Review** — per-surface table in OpticStudio Lens Data Editor format (R1, R2, thickness, air gap)
+![image](assets/Guide_Images/Page4.png)
+
 5. **Export** — download as CSV, with Optiland and ZMX export coming
+![image](assets/Guide_Images/Page5.png)
 
 **Under the hood:**
 - Flask backend, OpenCV detection pipeline
@@ -88,10 +97,14 @@ napkin-lens/
 
 ## Feedback
 
-If you're an optical engineer and this is useful, useless, or almost-useful-but-not-quite — I'd genuinely like to know. Open an issue or reach out directly: efcarbajal1@gmail.com. 
+If you're an optical engineer and this is useful, useless, or almost-useful-but-not-quite — I'd genuinely like to know. 
 
 ---
 
 ## License
 
 MIT
+
+## Author
+
+Esteban Carbajal - [LinkedIn](https://www.linkedin.com/in/bestebahn/)
