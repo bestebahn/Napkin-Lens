@@ -11,6 +11,7 @@ Optical design usually starts in one of a few ways: you search patents, you pull
 But sometimes the starting point is a diagram. A figure from a paper, a sketch from a meeting, something that exists visually but not yet numerically. Getting from that image to a working optical design has always meant doing it by hand.
 
 Napkin Lens automates that step using computer vision. Upload the diagram, calibrate the scale, and it extracts radii of curvature, thicknesses, and air gaps into a format you can use.
+![image](assets/Napkin_Lens_Workflow.gif)
 
 ---
 
