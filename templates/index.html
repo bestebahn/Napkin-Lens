@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Napkin Lens — Optical Prescription Extractor</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────────────────── -->
+<header>
+  <a class="logo" href="/">
+    <svg class="logo-icon" viewBox="0 0 34 34" fill="none">
+      <rect width="34" height="34" rx="8" fill="#10141c"/>
+      <path d="M10 17 Q17 8 24 17 Q17 26 10 17Z" stroke="#4a9eff" stroke-width="1.5" fill="rgba(74,158,255,0.08)"/>
+      <path d="M13 17 Q17 11 21 17 Q17 23 13 17Z" stroke="#4a9eff" stroke-width="1" fill="rgba(74,158,255,0.15)" stroke-dasharray="2 1"/>
+      <line x1="5" y1="17" x2="29" y2="17" stroke="#1e2535" stroke-width="1"/>
+    </svg>
+    <span class="logo-wordmark">Napkin <span>Lens</span></span>
+  </a>
+  <span class="header-badge">Alpha</span>
+  <button class="theme-toggle" id="btn-theme-toggle" title="Toggle light/dark mode">
+    <span class="theme-icon-dark">☀︎</span>
+    <span class="theme-icon-light" style="display:none">☽</span>
+  </button>
+</header>
+
+<!-- ── Step progress ────────────────────────────────────────────────────────── -->
+<nav class="progress-bar">
+  <div class="steps">
+    <div class="step active" id="s1"><div class="step-num">1</div><span class="step-label">Upload</span></div>
+    <div class="step"        id="s2"><div class="step-num">2</div><span class="step-label">Scale</span></div>
+    <div class="step"        id="s3"><div class="step-num">3</div><span class="step-label">Detect</span></div>
+    <div class="step"        id="s4"><div class="step-num">4</div><span class="step-label">Review</span></div>
+    <div class="step"        id="s5"><div class="step-num">5</div><span class="step-label">Export</span></div>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ── STEP 1: Upload ──────────────────────────────────────────────────── -->
+  <div class="wizard-pane active" id="pane-1">
+    <div class="pane-header">
+      <p class="pane-eyebrow">Step 1 of 5</p>
+      <h1 class="pane-title">Upload a lens diagram</h1>
+      <p class="pane-sub">
+        Supports PNG, JPG, TIFF, WEBP. Works best with clean CAD exports or technical cross-section diagrams.
+        Coloured marketing diagrams are also supported.
+      </p>
+    </div>
+
+    <!-- Drop zone -->
+    <div class="upload-zone" id="upload-zone">
+      <input type="file" id="file-input" accept="image/png,image/jpeg,image/bmp,image/tiff,image/webp">
+      <svg class="upload-icon" viewBox="0 0 52 52" fill="none">
+        <path d="M26 34V18M26 18L20 24M26 18L32 24" stroke="#8896b3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M14 38h24M10 28c0-6.627 5.373-12 12-12h8c6.627 0 12 5.373 12 12" stroke="#8896b3" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <p class="upload-title">Drop image here or click to browse</p>
+      <p class="upload-sub">PNG · JPG · TIFF · BMP · WEBP — max 32 MB</p>
+    </div>
+
+    <!-- Upload error message -->
+    <p class="error-msg" id="upload-error"></p>
+
+    <div class="nav-row">
+      <span></span>
+      <button class="btn btn-primary" id="btn-to-scale" disabled>
+        Continue
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── STEP 2: Scale ────────────────────────────────────────────────────── -->
+  <div class="wizard-pane" id="pane-2">
+    <div class="pane-header">
+      <p class="pane-eyebrow">Step 2 of 5</p>
+      <h1 class="pane-title">Set the scale</h1>
+      <p class="pane-sub">
+        Click two points on a feature of known real-world length — a scale bar, a lens diameter you know, or any reference dimension. Then enter that distance in mm.
+      </p>
+    </div>
+
+    <div class="scale-layout">
+
+      <!-- Canvas for click interaction -->
+      <div class="canvas-wrap" id="canvas-wrap">
+        <canvas id="scale-canvas"></canvas>
+        <p class="canvas-hint" id="canvas-hint">Click Point 1</p>
+      </div>
+
+      <!-- Scale sidebar -->
+      <div class="scale-panel">
+
+        <div class="scale-stat">
+          <div class="scale-stat-label">Points placed</div>
+          <div class="scale-stat-value accent" id="points-count">0 / 2</div>
+        </div>
+
+        <div class="scale-stat">
+          <div class="scale-stat-label">Pixel distance</div>
+          <div class="scale-stat-value" id="px-distance">—</div>
+        </div>
+
+        <div class="field">
+          <label for="known-mm">Known distance (mm)</label>
+          <input type="number" id="known-mm" placeholder="e.g. 25.4" min="0.01" step="0.01">
+          <span class="field-hint">The real-world length between your two clicked points</span>
+        </div>
+
+        <div class="scale-stat" id="scale-result-box" style="display:none">
+          <div class="scale-stat-label">Computed scale</div>
+          <div class="scale-stat-value accent" id="scale-result">—</div>
+        </div>
+
+        <p class="error-msg" id="scale-error"></p>
+
+        <span class="pill pill-pending" id="scale-status-pill">Waiting for points</span>
+
+        <button class="btn btn-secondary btn-sm" id="btn-reset-points" style="display:none">
+          ↺ Reset points
+        </button>
+
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-ghost" id="btn-back-to-upload">← Back</button>
+      <button class="btn btn-primary" id="btn-to-detect" disabled>
+        Run Detection
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── STEP 3: Detect ─────────────────────────────────────────────────── -->
+  <div class="wizard-pane" id="pane-3">
+    <div class="pane-header">
+      <p class="pane-eyebrow">Step 3 of 5</p>
+      <h1 class="pane-title">Review detections</h1>
+      <p class="pane-sub">Each detected lens element is outlined and numbered. Verify the count looks correct before extracting measurements.</p>
+    </div>
+
+    <div id="detect-running" class="card coming-soon-card" style="display:none">
+      <p style="color:var(--accent)">Running detection&#8230;</p>
+    </div>
+    <p class="error-msg" id="detect-error" style="margin-bottom:12px"></p>
+
+    <div class="detection-layout" id="detect-results" style="display:none">
+      <div>
+        <div class="canvas-toolbar">
+          <div class="view-toggle">
+            <button class="toggle-btn active" id="btn-view-overlay" onclick="showView('overlay')">Overlay</button>
+            <button class="toggle-btn" id="btn-view-thresh" onclick="showView('thresh')">Debug (threshold)</button>
+          </div>
+          <div class="zoom-controls">
+            <button class="zoom-btn" id="btn-zoom-in"  title="Zoom in">+</button>
+            <button class="zoom-btn" id="btn-zoom-out" title="Zoom out">&#8722;</button>
+            <button class="zoom-btn" id="btn-zoom-reset" title="Reset view">&#8635;</button>
+            <span class="zoom-level" id="zoom-level">100%</span>
+            <div class="toolbar-divider"></div>
+            <button class="zoom-btn roi-btn" id="btn-roi-toggle" title="Select region of interest">&#9633; ROI</button>
+            <button class="zoom-btn roi-clear" id="btn-roi-clear" title="Clear ROI — use full image" style="display:none">&#10005; ROI</button>
+          </div>
+        </div>
+        <div class="canvas-wrap" id="detect-canvas-wrap">
+          <canvas id="detect-canvas"></canvas>
+          <img id="thresh-img" style="display:none; max-width:100%; border-radius:var(--radius-lg)">
+        </div>
+        <p class="canvas-zoom-hint">Scroll to zoom &middot; Drag to pan</p>
+      </div>
+
+      <div class="detection-sidebar">
+        <div class="detection-count">
+          <div class="detection-count-num" id="detect-count-num">0</div>
+          <div class="detection-count-label">Elements detected</div>
+        </div>
+        <div class="element-chips" id="element-chips"></div>
+        <hr>
+        <div class="scale-stat">
+          <div class="scale-stat-label">Image style</div>
+          <div class="scale-stat-value" id="style-label" style="font-size:0.85rem">&#8212;</div>
+        </div>
+        <hr>
+        <div class="field">
+          <label for="override-count">Override element count</label>
+          <input type="number" id="override-count" placeholder="Auto-detected" min="1" max="20">
+          <span class="field-hint">Only needed if detection missed or doubled an element</span>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="btn-apply-override" style="display:none">Apply override</button>
+        <p class="error-msg" id="override-error"></p>
+        <span class="pill pill-success" id="detect-pill" style="display:none">Detection confirmed</span>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-ghost" onclick="goTo(2)">&#8592; Back</button>
+      <button class="btn btn-primary" id="btn-to-measure" disabled>
+        Extract Measurements
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── STEP 4: Review & edit ──────────────────────────────────────────── -->
+  <div class="wizard-pane" id="pane-4">
+    <div class="pane-header">
+      <p class="pane-eyebrow">Step 4 of 5</p>
+      <h1 class="pane-title">Review & edit measurements</h1>
+      <p class="pane-sub">
+        All values are in millimetres. R1 and R2 follow the standard sign convention —
+        positive radius if the centre of curvature is to the right of the surface.
+        Edit any cell before exporting.
+      </p>
+    </div>
+
+    <p class="error-msg" id="measure-error" style="margin-bottom:12px"></p>
+
+    <div class="measure-layout">
+      <!-- Annotated image for reference -->
+      <div class="measure-image-panel">
+        <p class="pane-eyebrow" style="margin-bottom:8px">Element reference</p>
+        <div class="measure-canvas-wrap">
+          <canvas id="measure-canvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Measurements table -->
+      <div class="measure-table-wrap" id="measure-table-wrap">
+      <table class="measure-table" id="measure-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Surf</th>
+            <th>Element</th>
+            <th>Role</th>
+            <th>R (mm)</th>
+            <th>Thickness (mm)</th>
+            <th>Diameter (mm)</th>
+            <th>Glass</th>
+          </tr>
+        </thead>
+        <tbody id="measure-tbody"></tbody>
+      </table>
+      </div>
+    </div><!-- end measure-layout -->
+
+    <div class="measure-notes">
+      <p id="measure-scale-note"></p>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-ghost" onclick="goTo(3)">&#8592; Back</button>
+      <button class="btn btn-primary" id="btn-to-export">
+        Continue to Export
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="wizard-pane" id="pane-5">
+    <div class="pane-header">
+      <p class="pane-eyebrow">Step 5 of 5</p>
+      <h1 class="pane-title">Export prescription</h1>
+      <p class="pane-sub">
+        Download your extracted prescription for use in optical design software.
+        All values are in millimetres — edit them in Step 4 before exporting.
+      </p>
+    </div>
+
+    <p class="error-msg" id="export-error" style="margin-bottom:12px"></p>
+
+    <div class="export-grid">
+
+      <!-- CSV export card -->
+      <div class="export-card">
+        <div class="export-card-icon">⬇</div>
+        <h3 class="export-card-title">CSV</h3>
+        <p class="export-card-desc">
+          Surface-by-surface prescription table. Opens in Excel, importable
+          into any optical design tool or database.
+        </p>
+        <div class="export-card-meta" id="csv-surface-count"></div>
+        <button class="btn btn-primary" id="btn-export-csv">
+          Download CSV
+        </button>
+      </div>
+
+      <!-- Optiland placeholder card -->
+      <div class="export-card export-card-soon">
+        <div class="export-card-icon">🔭</div>
+        <h3 class="export-card-title">Optiland Script</h3>
+        <p class="export-card-desc">
+          Python script that builds your lens in Optiland and runs paraxial
+          analysis. Coming soon.
+        </p>
+        <button class="btn btn-ghost" disabled>Coming soon</button>
+      </div>
+
+      <!-- ZMX placeholder card -->
+      <div class="export-card export-card-soon">
+        <div class="export-card-icon">⚙</div>
+        <h3 class="export-card-title">ZMX / OpticStudio</h3>
+        <p class="export-card-desc">
+          Native Zemax file format for direct import into OpticStudio.
+          Coming soon.
+        </p>
+        <button class="btn btn-ghost" disabled>Coming soon</button>
+      </div>
+
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-ghost" onclick="goTo(4)">← Back</button>
+    </div>
+  </div>
+
+</main>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
